@@ -4,7 +4,7 @@ A CLI tool that makes commits on a random repository of a Github user using emoj
 
 ## How to run
 
-For now, since this project is stil in development, and doesn't have a working/functional version, there is a `shell script` called `compile_and_run.sh` which can be used to run it.
+For now, since this project is still in development, and doesn't have a working/functional version, there is a `shell script` called `compile_and_run.sh` which can be used to run it.
 
 You can do it like this:
 
