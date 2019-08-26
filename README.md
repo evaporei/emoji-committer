@@ -15,3 +15,7 @@ You can do it like this:
 It is an executable already (`chmod +x`).
 
 For now I am using `clang` to compile the code.
+
+## git style guide
+
+To some extent, this project follows this style guide: https://gitmoji.carloscuesta.me.
