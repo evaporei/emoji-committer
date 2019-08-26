@@ -1,1 +1,1 @@
-clang src/main.c -o emoji-committer && ./emoji-committer
+clang src/main.c -o emoji-committer && ./emoji-committer "$@"
