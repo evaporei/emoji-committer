@@ -1,11 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdbool.h>
 
-const char* parse_cli_args(int argc, const char** args) {
-  if (argc != 2) {
-    fprintf(stderr, "emoji-committer expects exactly one argument, the Github username\n");
-    exit(-1);
-  }
+bool is_cli_args_size_valid(int args_size) {
+  return args_size == 2;
+}
 
+const char* get_github_username(const char** args) {
   return args[1];
 }
