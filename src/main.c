@@ -7,7 +7,7 @@
 #include "cli.h"
 #include "failure.h"
 
-void http_request(const char* host, const char* path, const char* method) {
+char* http_request(const char* host, const char* path, const char* method) {
   const char* space = " ";
   const char* line_break = "\r\n";
   const char* host_prefix = "Host:";
@@ -21,15 +21,28 @@ void http_request(const char* host, const char* path, const char* method) {
     strlen(connection) + strlen(line_break) +
     strlen(line_break);
 
-  char message[message_len];
+  char* message = malloc(message_len * sizeof(char));
 
-  sprintf(message, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-      method, space, path, space, http_name, line_break,
-      host_prefix, space, host, line_break,
-      user_agent, line_break,
-      connection, line_break,
-      line_break);
+  strcat(message, method);
+  strcat(message, space);
+  strcat(message, path);
+  strcat(message, space);
+  strcat(message, http_name);
+  strcat(message, line_break);
 
+  strcat(message, host_prefix);
+  strcat(message, space);
+  strcat(message, host);
+  strcat(message, line_break);
+
+  strcat(message, user_agent);
+  strcat(message, line_break);
+
+  strcat(message, connection);
+  strcat(message, line_break);
+
+  strcat(message, line_break);
+  
   SSL_library_init();
 
   SSL_CTX* ssl_context = SSL_CTX_new(SSLv23_client_method());
@@ -56,25 +69,60 @@ void http_request(const char* host, const char* path, const char* method) {
     exit_with_message("Failed to write bytes");
   }
 
+  free(message);
+
+  const int BUFFER_SIZE = 1024;
+  const int MAX_SIZE = 4096;
+  /*  */
+  int capacity = MAX_SIZE;
+  int how_much_read = 0;
   int size;
+  char* response = malloc(capacity * sizeof(char));
   char buf[1024];
 
   printf("RESPONSE: \n");
 
+  int read_time = 0;
+
   for (;;) {
     size = BIO_read(ssl_bio, buf, 1023);
+    /* size = BIO_read(ssl_bio, response + (BUFFER_SIZE * read_time), BUFFER_SIZE - 1); */
+    if (read_time <= 5) {
+      printf("---------------------\n");
+      printf("%s\n", response);
+    }
+    /* printf("how_much_read: %d\n", how_much_read); */
+    how_much_read += BUFFER_SIZE;
+
 
     if (size <= 0) {
       break;
     }
 
+    /* response[size] = 0; */
+    if (capacity <= how_much_read) {
+      /* printf("if capacity <= how_much_read\n"); */
+      capacity += MAX_SIZE;
+      /* printf("new capacity: %d\n", capacity); */
+      response = realloc(response, capacity * sizeof(char));
+    }
     buf[size] = 0;
 
-    printf("%s", buf);
+    memcpy(response + (read_time * BUFFER_SIZE), buf, 1024);
+
+    read_time++;
+    printf("read time: %d\n", read_time);
+    /* printf("%s", buf); */
   }
+
+  printf("http_response: %s\n", response);
+
+  free(response);
 
   BIO_free_all(ssl_bio);
   SSL_CTX_free(ssl_context);
+
+  return response;
 }
 
 bool is_github_username_valid(const char* username) {
@@ -88,7 +136,7 @@ bool is_github_username_valid(const char* username) {
   return true;
 }
 
-void get_github_user_repositories(const char* username) {
+char* get_github_user_repositories(const char* username) {
   const char* host = "api.github.com";
 
   const char* users_path = "/users";
@@ -106,7 +154,7 @@ void get_github_user_repositories(const char* username) {
 
   /* path[path_len] = '\0'; #<{(| truncate rest of string |)}># */
 
-  http_request(host, path, "GET");
+  return http_request(host, path, "GET");
 }
 
 
@@ -123,5 +171,9 @@ int main(int argc, const char** args) {
 
   printf("github_username: %s\n", github_username);
 
-  get_github_user_repositories(github_username);
+  char* http_response = get_github_user_repositories(github_username);
+
+  /* printf("http_response: %s\n", http_response); */
+
+  /* free(http_response); */
 }
