@@ -72,9 +72,9 @@ char* http_request(const char* host, const char* path, const char* method) {
   free(message);
 
   const int BUFFER_SIZE = 1024;
-  const int MAX_SIZE = 4096;
-  /*  */
-  int capacity = MAX_SIZE;
+  /* const int MAX_SIZE = 4096; */
+  /* int capacity = MAX_SIZE; */
+  int capacity = BUFFER_SIZE;
   int how_much_read = 0;
   int size;
   char* response = malloc(capacity * sizeof(char));
@@ -82,37 +82,19 @@ char* http_request(const char* host, const char* path, const char* method) {
 
   printf("RESPONSE: \n");
 
-  int read_time = 0;
-
   for (;;) {
-    size = BIO_read(ssl_bio, buf, 1023);
-    /* size = BIO_read(ssl_bio, response + (BUFFER_SIZE * read_time), BUFFER_SIZE - 1); */
-    if (read_time <= 5) {
-      printf("---------------------\n");
-      printf("%s\n", response);
-    }
-    /* printf("how_much_read: %d\n", how_much_read); */
-    how_much_read += BUFFER_SIZE;
-
+    size = BIO_read(ssl_bio, response + how_much_read, BUFFER_SIZE);
 
     if (size <= 0) {
       break;
     }
 
-    /* response[size] = 0; */
-    if (capacity <= how_much_read) {
-      /* printf("if capacity <= how_much_read\n"); */
-      capacity += MAX_SIZE;
-      /* printf("new capacity: %d\n", capacity); */
-      response = realloc(response, capacity * sizeof(char));
-    }
-    buf[size] = 0;
+    how_much_read += size;
 
-    memcpy(response + (read_time * BUFFER_SIZE), buf, 1024);
+    capacity += size;
+    response = realloc(response, capacity * sizeof(char));
 
-    read_time++;
-    printf("read time: %d\n", read_time);
-    /* printf("%s", buf); */
+    /* strcpy(response + (read_time * BUFFER_SIZE), buf); */
   }
 
   printf("http_response: %s\n", response);
@@ -176,4 +158,3 @@ int main(int argc, const char** args) {
   /* printf("http_response: %s\n", http_response); */
 
   /* free(http_response); */
-}
