@@ -158,3 +158,4 @@ int main(int argc, const char** args) {
   /* printf("http_response: %s\n", http_response); */
 
   /* free(http_response); */
+}
